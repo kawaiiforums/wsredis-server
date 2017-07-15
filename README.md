@@ -6,9 +6,12 @@ The bridge is comprised of:
 - the `wsredis-server` Node.js application managing WebSockets connections, listening to Redis channels, verifying permissions and broadcasting message objects.
 
 ### Dependencies
+- PHP >= 7.0
 - https://github.com/phpredis/phpredis
 
 ### Setup
+Place the `wsredis-server` directory, containing the Node.js application, outside the WWW root and place the remaining directories in the MyBB's main directory.
+
 Install the MyBB plugin and configure connection settings for Redis, WebSockets server, the token key, allowed origin hosts and values as needed in the plugin's settings and the app's _config.js_ file.
 
 Run `npm install` in the `wsredis-server` directory to install the Node.js app dependencies and run `npm start` to start the application.
