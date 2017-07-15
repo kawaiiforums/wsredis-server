@@ -16,7 +16,7 @@ var config = {
         maxAge: "10m",
         clockTolerance: 10,
     },
-    "verbosity_level": 0,
+    "verbosity_level": 1,
 };
 
 module.exports = config;
