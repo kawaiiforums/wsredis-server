@@ -60,7 +60,7 @@ function wsredisClient(uri, userToken, userTokenTimestamp, tokenExpirationTime)
                 thisObject.handle = new WebSocket(thisObject.uri, [ thisObject.userToken ]);
 
                 thisObject.handle.addEventListener('open', function (event) {
-                    //console.log('wsredisClient: connection opened');
+                    console.log('wsredisClient: connection opened');
 
                     if (channels !== undefined) {
                         thisObject.addChannels(channels);
@@ -75,11 +75,11 @@ function wsredisClient(uri, userToken, userTokenTimestamp, tokenExpirationTime)
                 });
 
                 thisObject.handle.addEventListener('close', function (event) {
-                    //console.log('wsredisClient: connection closed');
+                    console.log('wsredisClient: connection closed');
                 });
 
                 thisObject.handle.addEventListener('message', function (event) {
-                    //console.log('wsredisClient: message: ', event.data);
+                    console.log('wsredisClient: message: ', event.data);
 
                     var message = JSON.parse(event.data);
 
