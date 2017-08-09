@@ -5,7 +5,7 @@ namespace wsredis;
 use \Firebase\JWT\JWT;
 
 // active operations
-function push(string $channel, array $data, array $permissions): bool
+function push(string $channel, array $data, array $permissions)
 {
     $permissions['user_ids'] = $permissions['user_ids'] ?? [];
     $permissions['group_ids'] = $permissions['group_ids'] ?? [];
