@@ -2,6 +2,10 @@ const ws = require('ws');
 const jwt = require('jsonwebtoken');
 const redis = require('redis');
 
+process.on('uncaughtException', function (exception) {
+    console.log(exception);
+});
+
 module.exports = function (config) {
     // core
     this.config = config;
@@ -28,7 +32,11 @@ module.exports = function (config) {
 
     this.broadcastData = (channel, data) => {
         if (typeof data.permissions.user_ids == 'object' && typeof data.permissions.group_ids == 'object' && typeof data.data == 'object') {
-            this.sendToWebsocketClients(channel, data.permissions, data.data);
+            let messagesSent = this.sendToWebsocketClients(channel, data.permissions, data.data);
+
+            if (this.config.verbosity_level >= 4) {
+                console.log('| Broadcast ' + messagesSent + ' messages on channel ' + channel);
+            }
         }
     };
 
@@ -117,18 +125,18 @@ module.exports = function (config) {
             (token = this.verifyUserToken(request.headers['sec-websocket-protocol'])) == false
         ) {
             websocket.close();
-        } else {
-            var clientId = this.addWebsocketClient(websocket, request, token);
 
             if (this.config.verbosity_level >= 2) {
-                console.log('+ Websocket connected: ' + clientId);
+                console.log('! Websocket connection request rejected for ' + clientId);
             }
+        } else {
+            var clientId = this.addWebsocketClient(websocket, request, token);
 
             websocket.on('close', () => {
                 delete this.websocketClients[clientId];
 
                 if (this.config.verbosity_level >= 2) {
-                    console.log('- Websocket disconnected (client-side): ' + clientId);
+                    console.log('- Websocket disconnected (client-side): ' + clientId + ' (' + Object.keys(this.websocketClients).length + ' total)');
                 }
             });
 
@@ -146,7 +154,11 @@ module.exports = function (config) {
                                 this.setWebsocketClientToken(clientId, token);
 
                                 if (this.config.verbosity_level >= 2) {
-                                    console.log('* Refreshing token for ' + clientId);
+                                    console.log('* Token refreshed for ' + clientId);
+                                }
+                            } else {
+                                if (this.config.verbosity_level >= 2) {
+                                    console.log('! Token refresh request rejected for ' + clientId);
                                 }
                             }
                             break;
@@ -187,6 +199,8 @@ module.exports = function (config) {
     };
 
     this.sendToWebsocketClients = (channel, permissions, data) => {
+        let messagesSent = 0;
+
         for (let clientId of Object.keys(this.websocketClients)) {
             let client = this.websocketClients[clientId];
 
@@ -206,21 +220,27 @@ module.exports = function (config) {
                 this.disconnectWebsocketClient();
             }
         }
+
+        return messagesSent;
     };
 
     this.addWebsocketClient = (websocket, request, token) => {
         var client = {};
 
-        var id = request.headers['sec-websocket-key'];
+        var clientId = request.headers['sec-websocket-key'];
 
         client.websocket = websocket;
         client.channels = new Set();
 
-        this.websocketClients[id] = client;
+        this.websocketClients[clientId] = client;
 
-        this.setWebsocketClientToken(id, token);
+        this.setWebsocketClientToken(clientId, token);
 
-        return id;
+        if (this.config.verbosity_level >= 2) {
+            console.log('+ Websocket connected: ' + clientId + ' (' + Object.keys(this.websocketClients).length + ' total)');
+        }
+
+        return clientId;
     };
 
     this.setWebsocketClientToken = (clientId, token) => {
@@ -243,7 +263,7 @@ module.exports = function (config) {
                 delete this.websocketClients[clientId];
 
                 if (this.config.verbosity_level >= 2) {
-                    console.log('- Websocket disconnected: ' + clientId);
+                    console.log('- Websocket disconnected: ' + clientId + ' (' + Object.keys(this.websocketClients).length + ' total)');
                 }
             });
         }
