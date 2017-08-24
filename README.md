@@ -2,7 +2,7 @@
 Websocket/Redis bridge for MyBB 1.8, used for sidebar and alerts.
 
 The bridge is comprised of:
-- the `WebSockets & Redis bridge` MyBB plugin that provides a server-side PHP API for broadcasting channel- and permission-aware message objects and client-side API for communicating with the WebSockets server, including JWT access tokens handling,
+- the [`WebSockets & Redis bridge` MyBB plugin](https://github.com/kawaii/wsredis-plugin) that provides a server-side PHP API for broadcasting channel- and permission-aware message objects and client-side API for communicating with the WebSockets server, including JWT access tokens handling,
 - the `wsredis-server` Node.js application managing WebSockets connections, listening to Redis channels, verifying permissions and broadcasting message objects.
 
 ### Dependencies
@@ -29,5 +29,6 @@ Run `npm install` in the `wsredis-server` directory to install the Node.js app d
 The `config.verbosity_level` option in the Node.js app configuration supports the following values:
 - `0`: errors only,
 - `1`: startup & shutdown messages,
-- `2`: startup & shutdown messages, WebSockets connections, token updates,
-- `3`: startup & shutdown messages, WebSockets connections, token updates, channel subscription requests.
+- `2`: startup & shutdown messages, WebSockets connections, token updates, token mismatch events,
+- `3`: startup & shutdown messages, WebSockets connections, token updates, token mismatch events,, channel subscription requests.
+- `4`: startup & shutdown messages, WebSockets connections, token updates, token mismatch events,, channel subscription requests, broadcasted messages summary.
