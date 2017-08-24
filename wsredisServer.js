@@ -215,6 +215,8 @@ module.exports = function (config) {
                     };
 
                     client.websocket.send(JSON.stringify(messageData));
+
+                    messagesSent++;
                 }
             } else {
                 this.disconnectWebsocketClient();
