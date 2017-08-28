@@ -1,3 +1,4 @@
+var dotenv = require('dotenv').config();
 var config = require('./config');
 var wsredisServer = require('./wsredisServer');
 
