@@ -10,23 +10,23 @@ The bridge is comprised of:
 - https://github.com/phpredis/phpredis
 
 ### Setup
-Place the `wsredis-server` directory, containing the Node.js application, outside the WWW root and place the remaining directories in the MyBB's main directory.
+Place the Node.js application files outside the WWW root and place the MyBB plugin files in the MyBB's main directory.
 
-Install the MyBB plugin and configure connection settings for Redis, WebSockets server, the token key, allowed origin hosts and values as needed in the plugin's settings and the app's _config.js_ file.
+Install the MyBB plugin and configure connection settings for Redis, WebSockets server, the token key, allowed origin hosts and values as needed in the plugin's settings and the app's `.env` file (sample values are provided in `.env.example`).
 
-Run `npm install` in the `wsredis-server` directory to install the Node.js app dependencies and run `npm start` to start the application.
+Run `npm install` in the app's directory to install dependencies and run `npm start` to start the application.
 
 ### Security considerations
-- The `Token key` and `config.tokenKey` values containing the JWT key, in plugin's settings and Node.js app configuration respectively, should be updated with a securely generated random string specific to the MyBB-WebSockets environment and should not be (re)used for other purposes nor disclosed to third parties.
+- The `Token key` and `WSREDIS_TOKEN_KEY` values containing the JWT key, in plugin's settings and Node.js app configuration respectively, should be updated with a securely generated random string specific to the MyBB-WebSockets environment and should not be (re)used for other purposes nor disclosed to third parties.
 
-- The `Token expiration time` (plugin settings), `config.jwtVerifyOptions.maxAge`,  `config.jwtVerifyOptions.clockTolerance` (Node.js app) values describe how long the JWT authentication & authorization tokens should remain active. Lower values provide better security but increase server loads and frequency of AJAX token refreshes. The WebSockets and MyBB sessions are detached and therefore it is possible that users who were logged out, removed, or whose permissions were revoked will retain the set of permissions (user IDs and group memberships) included in the lastest JWT ticket until it expires.
+- The `Token expiration time` (plugin settings), `WSREDIS_JWT_MAX_AGE`,  `WSREDIS_JWT_CLOCK_TOLERANCE` (Node.js app) values describe how long the JWT authentication & authorization tokens should remain active. Lower values provide better security but increase server loads and frequency of AJAX token refreshes. The WebSockets and MyBB sessions are detached and therefore it is possible that users who were logged out, removed, or whose permissions were revoked will retain the set of permissions (user IDs and group memberships) included in the lastest JWT ticket until it expires.
 
-- The `config.allowedOrigins` in the Node.js app configuration contains possible values for `Origin` headers in order for connection requests to be accepted. The array should only contain the address(es) the MyBB forum is available under.
+- The `WSREDIS_ALLOWED_ORIGINS` in the Node.js app configuration contains possible comma-separated values for `Origin` headers in order for connection requests to be accepted. The array should only contain the address(es) the MyBB forum is available under.
 
-- The `config.jwtVerifyOptions.algorithms` value contains possible accepted hashing algorithms used to verify JWT signatures using the token key. It is not recommended to use algorithms that are weaker than defaults, less popular, custom or have not undergone an independent security audit.
+- The `WSREDIS_JWT_ALGORITHMS` value contains comma-separated possible accepted hashing algorithms used to verify JWT signatures using the token key. It is not recommended to use algorithms that are weaker than defaults, less popular, custom or have not undergone an independent security audit.
 
 ### Verbosity levels
-The `config.verbosity_level` option in the Node.js app configuration supports the following values:
+The `WSREDIS_VERBOSITY_LEVEL` option in the Node.js app configuration supports the following values:
 - `0`: errors only,
 - `1`: startup & shutdown messages,
 - `2`: startup & shutdown messages, WebSockets connections, token updates, token mismatch events,
