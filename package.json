@@ -14,5 +14,6 @@
     "repository": {
         "type": "git",
         "url": "git://github.com/kawaii/mybb-wsredis.git"
-    }
+    },
+    "private": true
 }
