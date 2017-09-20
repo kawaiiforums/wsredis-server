@@ -219,7 +219,7 @@ module.exports = function (config) {
                     messagesSent++;
                 }
             } else {
-                this.disconnectWebsocketClient();
+                this.disconnectWebsocketClient(clientId);
             }
         }
 
