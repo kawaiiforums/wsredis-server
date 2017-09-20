@@ -8,6 +8,7 @@ The bridge is comprised of:
 ### Dependencies
 - PHP >= 7.0
 - https://github.com/phpredis/phpredis
+- https://github.com/firebase/php-jwt (included)
 
 ### Setup
 Place the Node.js application files outside the WWW root and place the MyBB plugin files in the MyBB's main directory.
