@@ -35,7 +35,7 @@ module.exports = function (config) {
             let messagesSent = this.sendToWebsocketClients(channel, data.permissions, data.data);
 
             if (this.config.verbosity_level >= 4) {
-                console.log('| Broadcast ' + messagesSent + ' messages on channel ' + channel);
+                console.log('| Broadcast message to ' + messagesSent + ' client(s) on channel ' + channel);
             }
         }
     };
@@ -97,14 +97,18 @@ module.exports = function (config) {
     this.startWebsocketServer = () => {
         this.websocketServer = new ws.Server({ port: this.config.port, verifyClient: this.websocketVerifyClient });
 
-        if (this.config.verbosity_level >= 1) {
-            console.log('WebSockets server running on port ' + this.config.port);
-        }
+
 
         this.websocketServer.on('error', function (error) {
             console.log('WebSockets server error: ' + error);
         });
         
+        this.websocketServer.on('listening', () => {
+            if (this.config.verbosity_level >= 1) {
+                console.log('WebSockets server running on port ' + this.config.port);
+            }
+        });
+
         this.websocketServer.on('connection', this.websocketOnConnection);
     };
 
@@ -136,7 +140,7 @@ module.exports = function (config) {
                 delete this.websocketClients[clientId];
 
                 if (this.config.verbosity_level >= 2) {
-                    console.log('- Websocket disconnected (client-side): ' + clientId + ' (' + Object.keys(this.websocketClients).length + ' total)');
+                    console.log('- Websocket disconnected by client: ' + clientId + ' [' + Object.keys(this.websocketClients).length + ' active connections]');
                 }
             });
 
@@ -239,7 +243,7 @@ module.exports = function (config) {
         this.setWebsocketClientToken(clientId, token);
 
         if (this.config.verbosity_level >= 2) {
-            console.log('+ Websocket connected: ' + clientId + ' (' + Object.keys(this.websocketClients).length + ' total)');
+            console.log('+ Websocket connected: ' + clientId + ' [' + Object.keys(this.websocketClients).length + ' active connections]');
         }
 
         return clientId;
@@ -265,7 +269,7 @@ module.exports = function (config) {
                 delete this.websocketClients[clientId];
 
                 if (this.config.verbosity_level >= 2) {
-                    console.log('- Websocket disconnected: ' + clientId + ' (' + Object.keys(this.websocketClients).length + ' total)');
+                    console.log('- Websocket disconnected by server: ' + clientId + ' [' + Object.keys(this.websocketClients).length + ' active connections]');
                 }
             });
         }
