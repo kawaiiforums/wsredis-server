@@ -135,11 +135,11 @@ module.exports = function (config) {
             var clientId = this.addWebsocketClient(websocket, request, token);
 
             websocket.on('close', () => {
-                delete this.websocketClients[clientId];
-
                 if (this.config.verbosity_level >= 2) {
-                    console.log('- Websocket disconnected by client: ' + clientId + ' [' + Object.keys(this.websocketClients).length + ' active connections]');
+                    console.log('- Websocket disconnected by client: ' + clientId + ' (MyBB UID: ' + this.getUserIdByClientId(clientId) + ') [' + Object.keys(this.websocketClients).length + ' active connections]');
                 }
+
+                delete this.websocketClients[clientId];
             });
 
             websocket.on('message', (message) => {
@@ -241,7 +241,7 @@ module.exports = function (config) {
         this.setWebsocketClientToken(clientId, token);
 
         if (this.config.verbosity_level >= 2) {
-            console.log('+ Websocket connected: ' + clientId + ' [' + Object.keys(this.websocketClients).length + ' active connections]');
+            console.log('+ Websocket connected: ' + clientId + ' (MyBB UID: ' + this.getUserIdByClientId(clientId) + ') [' + Object.keys(this.websocketClients).length + ' active connections]');
         }
 
         return clientId;
@@ -251,6 +251,10 @@ module.exports = function (config) {
         token.group_ids = Object.keys(token.group_ids).map(key => token.group_ids[key]);
 
         this.websocketClients[clientId].token = token;
+    };
+
+    this.getUserIdByClientId = (clientId) => {
+        return this.websocketClients[clientId].token.user_id;
     };
 
     this.addWebsocketClientChannel = (clientId, channel) => {
@@ -267,7 +271,7 @@ module.exports = function (config) {
                 delete this.websocketClients[clientId];
 
                 if (this.config.verbosity_level >= 2) {
-                    console.log('- Websocket disconnected by server: ' + clientId + ' [' + Object.keys(this.websocketClients).length + ' active connections]');
+                    console.log('- Websocket disconnected by server: ' + clientId + ' (MyBB UID: ' + this.getUserIdByClientId(clientId) + ') [' + Object.keys(this.websocketClients).length + ' active connections]');
                 }
             });
         }
