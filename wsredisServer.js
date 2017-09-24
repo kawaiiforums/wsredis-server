@@ -97,8 +97,6 @@ module.exports = function (config) {
     this.startWebsocketServer = () => {
         this.websocketServer = new ws.Server({ port: this.config.port, verifyClient: this.websocketVerifyClient });
 
-
-
         this.websocketServer.on('error', function (error) {
             console.log('WebSockets server error: ' + error);
         });
@@ -306,10 +304,18 @@ module.exports = function (config) {
     };
 
     this.redisOnPmessage = (pattern, channel, message) => {
-        data = JSON.parse(message);
+        try {
+            var data = JSON.parse(message);
 
-        if (typeof data == 'object' && typeof channel == 'string') {
-            this.broadcastData(channel, data);
+            if (typeof data == 'object' && typeof channel == 'string') {
+                this.broadcastData(channel, data);
+            }
+        } catch (error) {
+            if (this.config.verbosity_level >= 2) {
+                console.log('! Malformed message received on channel "' + channel + '"');
+            }
+
+            return false;
         }
     };
 }
