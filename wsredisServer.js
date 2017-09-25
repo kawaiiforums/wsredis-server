@@ -54,9 +54,8 @@ module.exports = function (config) {
 
     this.tokenMatchesPermissions = (token, permissions) => {
         return (
-            (permissions.user_ids.length == 0 && permissions.group_ids.length == 0) ||
-            permissions.user_ids.includes(token.user_id) ||
-            this.tokenGroupIdsMatchPermissions(token.group_ids, permissions.group_ids)
+            (permissions.user_ids.length == 0 || permissions.user_ids.includes(token.user_id)) &&
+            (permissions.group_ids.length == 0 || this.tokenGroupIdsMatchPermissions(token.group_ids, permissions.group_ids))
         );
     };
 
