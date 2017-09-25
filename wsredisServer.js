@@ -140,7 +140,13 @@ module.exports = function (config) {
                 delete this.websocketClients[clientId];
 
                 if (this.config.verbosity_level >= 2) {
-                    console.log('- Websocket disconnected by client: ' + clientId + ' (MyBB UID: ' + userId + ') [' + Object.keys(this.websocketClients).length + ' active connections]');
+                    if (userId) {
+                        var userIdInfo = ' (MyBB UID: ' + userId + ')';
+                    } else {
+                        var userIdInfo = '';
+                    }
+
+                    console.log('- Websocket disconnected by client: ' + clientId + userIdInfo + ' [' + Object.keys(this.websocketClients).length + ' active connections]');
                 }
             });
 
@@ -168,14 +174,17 @@ module.exports = function (config) {
                             break;
                         case 'add-channels':
                             if (typeof messageData.data.channels == 'object') {
+                                let channelsAdded = [];
+
                                 for (let i in messageData.data.channels) {
                                     if (typeof messageData.data.channels[i] == 'string') {
                                         this.addWebsocketClientChannel(clientId, messageData.data.channels[i]);
-
-                                        if (this.config.verbosity_level >= 3) {
-                                            console.log('# Adding channel(s) for ' + clientId + ': ' + messageData.data.channels.join(','));
-                                        }
+                                        channelsAdded.push(messageData.data.channels[i]);
                                     }
+                                }
+
+                                if (this.config.verbosity_level >= 3) {
+                                    console.log('# Adding channel(s) for ' + clientId + ': ' + channelsAdded.join(','));
                                 }
                             }
                             break;
@@ -256,7 +265,7 @@ module.exports = function (config) {
     };
 
     this.getUserIdByClientId = (clientId) => {
-        return this.websocketClients[clientId].token.user_id;
+        return this.websocketClients[clientId].token.user_id || false;
     };
 
     this.addWebsocketClientChannel = (clientId, channel) => {
