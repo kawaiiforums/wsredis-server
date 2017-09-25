@@ -71,7 +71,7 @@ module.exports = function (config) {
             if (permissions[i] !== null) {
                 var groupSet = Object.keys(permissions[i]).map(key => permissions[i][key]);
 
-                if (!this.arraysShareItems(tokenGroupIds, groupSet) && !groupSet.includes(-1)) {
+                if (!this.arraysShareItems(tokenGroupIds, groupSet) && !groupSet.includes(-1) && !groupSet.includes('-1')) {
                     return false;
                 }
             }
