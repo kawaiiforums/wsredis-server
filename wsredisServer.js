@@ -135,11 +135,13 @@ module.exports = function (config) {
             var clientId = this.addWebsocketClient(websocket, request, token);
 
             websocket.on('close', () => {
-                if (this.config.verbosity_level >= 2) {
-                    console.log('- Websocket disconnected by client: ' + clientId + ' (MyBB UID: ' + this.getUserIdByClientId(clientId) + ') [' + Object.keys(this.websocketClients).length + ' active connections]');
-                }
+                var userId = this.getUserIdByClientId(clientId);
 
                 delete this.websocketClients[clientId];
+
+                if (this.config.verbosity_level >= 2) {
+                    console.log('- Websocket disconnected by client: ' + clientId + ' (MyBB UID: ' + userId + ') [' + Object.keys(this.websocketClients).length + ' active connections]');
+                }
             });
 
             websocket.on('message', (message) => {
