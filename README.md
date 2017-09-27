@@ -30,6 +30,6 @@ Run `npm install` in the app's directory to install dependencies and run `npm st
 The `WSREDIS_VERBOSITY_LEVEL` option in the Node.js app configuration supports the following values (accumulative):
 - `0`: errors,
 - `1`: startup & shutdown messages,
-- `2`: WebSockets connections, token updates, token mismatch events, malformed message notices,
-- `3`: channel subscription requests,
-- `4`: broadcasted messages summary.
+- `2`: token mismatch events, malformed message notices,
+- `3`: WebSocket connections, token updates, keepalive messages,
+- `4`: channel subscription requests, broadcast messages summary.

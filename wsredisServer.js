@@ -134,19 +134,7 @@ module.exports = function (config) {
             var clientId = this.addWebsocketClient(websocket, request, token);
 
             websocket.on('close', () => {
-                var userId = this.getUserIdByClientId(clientId);
-
-                delete this.websocketClients[clientId];
-
-                if (this.config.verbosity_level >= 2) {
-                    if (userId) {
-                        var userIdInfo = ' (MyBB UID: ' + userId + ')';
-                    } else {
-                        var userIdInfo = '';
-                    }
-
-                    console.log('- Websocket disconnected by client: ' + clientId + userIdInfo + ' [' + Object.keys(this.websocketClients).length + ' active connections]');
-                }
+                this.websocketCloseCleanup(clientId);
             });
 
             websocket.on('message', (message) => {
@@ -162,7 +150,7 @@ module.exports = function (config) {
                             if ((token = this.verifyUserToken(messageData.data.token)) != false) {
                                 this.setWebsocketClientToken(clientId, token);
 
-                                if (this.config.verbosity_level >= 2) {
+                                if (this.config.verbosity_level >= 3) {
                                     console.log('* Token refreshed for ' + clientId);
                                 }
                             } else {
@@ -182,7 +170,7 @@ module.exports = function (config) {
                                     }
                                 }
 
-                                if (this.config.verbosity_level >= 3) {
+                                if (this.config.verbosity_level >= 4) {
                                     console.log('# Adding channel(s) for ' + clientId + ': ' + channelsAdded.join(','));
                                 }
                             }
@@ -193,7 +181,7 @@ module.exports = function (config) {
                                     if (typeof messageData.data.channels[i] == 'string') {
                                         this.removeWebsocketClientChannel(clientId, messageData.data.channels[i]);
 
-                                        if (this.config.verbosity_level >= 3) {
+                                        if (this.config.verbosity_level >= 4) {
                                             console.log('# Removing channel(s) for ' + clientId);
                                         }
                                     }
@@ -203,6 +191,10 @@ module.exports = function (config) {
                     }
                 }
             });
+
+            if (this.config.keepaliveInterval > 0) {
+                this.websocketClients[clientId].keepaliveInterval = setInterval(this.sendKeepaliveMessage, this.config.keepaliveInterval * 1000, clientId);
+            }
         }
     };
 
@@ -213,6 +205,11 @@ module.exports = function (config) {
     this.sendToWebsocketClients = (channel, permissions, data) => {
         let messagesSent = 0;
 
+        var dataObject = {
+            channel: channel,
+            data: data,
+        };
+
         for (let clientId of Object.keys(this.websocketClients)) {
             let client = this.websocketClients[clientId];
 
@@ -221,12 +218,7 @@ module.exports = function (config) {
                     this.websocketClients[clientId].channels.has(channel) &&
                     this.tokenMatchesPermissions(client.token, permissions)
                 ) {
-                    let messageData = {
-                        channel: channel,
-                        data: data,
-                    };
-
-                    client.websocket.send(JSON.stringify(messageData));
+                    this.sendDataToWebsocketClient(clientId, dataObject);
 
                     messagesSent++;
                 }
@@ -236,6 +228,24 @@ module.exports = function (config) {
         }
 
         return messagesSent;
+    };
+
+    this.sendKeepaliveMessage = (clientId) => {
+        if (this.config.verbosity_level >= 3) {
+            console.log('~ Keepalive message sent to ' + clientId);
+        }
+
+        return this.sendDataToWebsocketClient({
+            keepalive: '1',
+        });
+    };
+
+    this.sendDataToWebsocketClient = (clientId, data) => {
+        let client = this.websocketClients[clientId];
+
+        if (client) {
+            client.websocket.send(JSON.stringify(data));
+        }
     };
 
     this.addWebsocketClient = (websocket, request, token) => {
@@ -250,7 +260,7 @@ module.exports = function (config) {
 
         this.setWebsocketClientToken(clientId, token);
 
-        if (this.config.verbosity_level >= 2) {
+        if (this.config.verbosity_level >= 3) {
             console.log('+ Websocket connected: ' + clientId + ' (MyBB UID: ' + this.getUserIdByClientId(clientId) + ') [' + Object.keys(this.websocketClients).length + ' active connections]');
         }
 
@@ -278,12 +288,36 @@ module.exports = function (config) {
     this.disconnectWebsocketClient = (clientId) => {
         if (this.websocketClients[clientId] !== undefined) {
             this.websocketClients[clientId].websocket.close(() => {
-                delete this.websocketClients[clientId];
-
-                if (this.config.verbosity_level >= 2) {
-                    console.log('- Websocket disconnected by server: ' + clientId + ' (MyBB UID: ' + this.getUserIdByClientId(clientId) + ') [' + Object.keys(this.websocketClients).length + ' active connections]');
-                }
+                this.websocketCloseCleanup(clientId);
             });
+        }
+    };
+
+    this.websocketCloseCleanup = (clientId, closedByClient) => {
+        var userId = this.getUserIdByClientId(clientId);
+
+        clearInterval(this.websocketClients[clientId].keepaliveInterval);
+
+        delete this.websocketClients[clientId];
+        
+        if (this.config.verbosity_level >= 3) {
+            if (closedByClient == 'undefined') {
+                closedByClient = false;
+            }
+    
+            if (closedByClient) {
+                var closedBy = 'client';
+            } else {
+                var closedBy = 'server';
+            }
+
+            if (userId) {
+                var userIdInfo = ' (MyBB UID: ' + userId + ')';
+            } else {
+                var userIdInfo = '';
+            }
+
+            console.log('- Websocket disconnected by ' + closedBy + ': ' + clientId + userIdInfo + ' [' + Object.keys(this.websocketClients).length + ' active connections]');
         }
     };
 

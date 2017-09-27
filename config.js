@@ -3,6 +3,7 @@ var config = {
     "port": process.env.WSREDIS_PORT,
     "tokenKey": process.env.WSREDIS_TOKEN_KEY,
     "allowedOrigins": process.env.WSREDIS_ALLOWED_ORIGINS.split(','),
+    "keepaliveInterval": process.env.WSREDIS_KEEPALIVE_INTERVAL,
 
     // Redis client
     "redisHostname": process.env.WSREDIS_REDIS_HOSTNAME,
