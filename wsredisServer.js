@@ -31,12 +31,20 @@ module.exports = function (config) {
     };
 
     this.broadcastData = (channel, data) => {
-        if (typeof data.permissions.user_ids == 'object' && typeof data.permissions.group_ids == 'object' && typeof data.data == 'object') {
-            let messagesSent = this.sendToWebsocketClients(channel, data.permissions, data.data);
+        try {
+            if (typeof data.permissions.user_ids == 'object' && typeof data.permissions.group_ids == 'object' && typeof data.data == 'object') {
+                let messagesSent = this.sendToWebsocketClients(channel, data.permissions, data.data);
 
-            if (this.config.verbosity_level >= 4) {
-                console.log('| Broadcast message to ' + messagesSent + ' client(s) on channel ' + channel);
+                if (this.config.verbosity_level >= 4) {
+                    console.log('| Broadcast message to ' + messagesSent + ' client(s) (' + JSON.stringify(data.permissions) + ') on channel ' + channel);
+                }
             }
+        } catch (error) {
+            if (this.config.verbosity_level >= 2) {
+                console.log('! Failed to broadcast messages on channel "' + channel + '"');
+            }
+
+            return false;
         }
     };
 
@@ -128,13 +136,14 @@ module.exports = function (config) {
             websocket.close();
 
             if (this.config.verbosity_level >= 2) {
-                console.log('! Websocket connection request rejected for ' + clientId);
+                console.log('! Websocket connection request rejected for ' + request.headers['sec-websocket-key']);
             }
         } else {
             var clientId = this.addWebsocketClient(websocket, request, token);
+            var client = this.websocketClients[clientId];
 
             websocket.on('close', () => {
-                this.websocketCloseCleanup(clientId);
+                this.websocketCloseCleanup(clientId, client.websocketClosingByServer);
             });
 
             websocket.on('message', (message) => {
@@ -193,7 +202,7 @@ module.exports = function (config) {
             });
 
             if (this.config.keepaliveInterval > 0) {
-                this.websocketClients[clientId].keepaliveInterval = setInterval(this.sendKeepaliveMessage, this.config.keepaliveInterval * 1000, clientId);
+                client.keepaliveInterval = setInterval(this.sendKeepaliveMessage, this.config.keepaliveInterval * 1000, clientId);
             }
         }
     };
@@ -254,6 +263,7 @@ module.exports = function (config) {
         var clientId = request.headers['sec-websocket-key'];
 
         client.websocket = websocket;
+        client.websocketClosingByServer = false;
         client.channels = new Set();
 
         this.websocketClients[clientId] = client;
@@ -287,13 +297,13 @@ module.exports = function (config) {
 
     this.disconnectWebsocketClient = (clientId) => {
         if (this.websocketClients[clientId] !== undefined) {
-            this.websocketClients[clientId].websocket.close(() => {
-                this.websocketCloseCleanup(clientId);
-            });
+            this.websocketClients[clientId].websocketClosingByServer = true;
+
+            this.websocketClients[clientId].websocket.close();
         }
     };
 
-    this.websocketCloseCleanup = (clientId, closedByClient) => {
+    this.websocketCloseCleanup = (clientId, closedByServer) => {
         var userId = this.getUserIdByClientId(clientId);
 
         clearInterval(this.websocketClients[clientId].keepaliveInterval);
@@ -301,14 +311,14 @@ module.exports = function (config) {
         delete this.websocketClients[clientId];
         
         if (this.config.verbosity_level >= 3) {
-            if (closedByClient == 'undefined') {
-                closedByClient = false;
+            if (closedByServer == 'undefined') {
+                closedByServer = false;
             }
     
-            if (closedByClient) {
-                var closedBy = 'client';
-            } else {
+            if (closedByServer) {
                 var closedBy = 'server';
+            } else {
+                var closedBy = 'client';
             }
 
             if (userId) {
