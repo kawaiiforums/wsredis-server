@@ -36,12 +36,12 @@ module.exports = function (config) {
                 let messagesSent = this.sendToWebsocketClients(channel, data.permissions, data.data);
 
                 if (this.config.verbosity_level >= 4) {
-                    console.log('| Broadcast message to ' + messagesSent + ' client(s) (' + JSON.stringify(data.permissions) + ') on channel ' + channel);
+                    this.log('| Broadcast message to ' + messagesSent + ' client(s) (' + JSON.stringify(data.permissions) + ') on channel ' + channel);
                 }
             }
         } catch (error) {
             if (this.config.verbosity_level >= 2) {
-                console.log('! Failed to broadcast messages on channel "' + channel + '"');
+                this.log('! Failed to broadcast messages on channel "' + channel + '"');
             }
 
             return false;
@@ -97,6 +97,17 @@ module.exports = function (config) {
         return false;
     };
 
+    this.log = (...values) => {
+        if (this.config.log_timestamp) {
+            let timestamp = Math.floor(new Date().getTime() / 1000);
+            var timestampString = '[' + timestamp + '] ';
+        } else {
+            var timestampString = '';
+        }
+
+        console.log(timestampString + values.join(','));
+    };
+
     // WebSockets
     this.websocketClients = [];
     this.websocketServer = null;
@@ -105,12 +116,12 @@ module.exports = function (config) {
         this.websocketServer = new ws.Server({ port: this.config.port, verifyClient: this.websocketVerifyClient });
 
         this.websocketServer.on('error', function (error) {
-            console.log('WebSockets server error: ' + error);
+            this.log('WebSockets server error: ' + error);
         });
         
         this.websocketServer.on('listening', () => {
             if (this.config.verbosity_level >= 1) {
-                console.log('WebSockets server running on port ' + this.config.port);
+                this.log('WebSockets server running on port ' + this.config.port);
             }
         });
 
@@ -121,7 +132,7 @@ module.exports = function (config) {
         return new Promise((resolve, reject) => {
             this.websocketServer.close(() => {
                 if (this.config.verbosity_level >= 1) {
-                    console.log('WebSockets server closed');
+                    this.log('WebSockets server closed');
                 }
                 resolve();
             });
@@ -136,7 +147,7 @@ module.exports = function (config) {
             websocket.close();
 
             if (this.config.verbosity_level >= 2) {
-                console.log('! Websocket connection request rejected for ' + request.headers['sec-websocket-key']);
+                this.log('! Websocket connection request rejected for ' + request.headers['sec-websocket-key']);
             }
         } else {
             var clientId = this.addWebsocketClient(websocket, request, token);
@@ -160,11 +171,11 @@ module.exports = function (config) {
                                 this.setWebsocketClientToken(clientId, token);
 
                                 if (this.config.verbosity_level >= 3) {
-                                    console.log('* Token refreshed for ' + clientId);
+                                    this.log('* Token refreshed for ' + clientId);
                                 }
                             } else {
                                 if (this.config.verbosity_level >= 2) {
-                                    console.log('! Token refresh request rejected for ' + clientId);
+                                    this.log('! Token refresh request rejected for ' + clientId);
                                 }
                             }
                             break;
@@ -180,7 +191,7 @@ module.exports = function (config) {
                                 }
 
                                 if (this.config.verbosity_level >= 4) {
-                                    console.log('# Adding channel(s) for ' + clientId + ': ' + channelsAdded.join(','));
+                                    this.log('# Adding channel(s) for ' + clientId + ': ' + channelsAdded.join(','));
                                 }
                             }
                             break;
@@ -191,7 +202,7 @@ module.exports = function (config) {
                                         this.removeWebsocketClientChannel(clientId, messageData.data.channels[i]);
 
                                         if (this.config.verbosity_level >= 4) {
-                                            console.log('# Removing channel(s) for ' + clientId);
+                                            this.log('# Removing channel(s) for ' + clientId);
                                         }
                                     }
                                 }
@@ -241,7 +252,7 @@ module.exports = function (config) {
 
     this.sendKeepaliveMessage = (clientId) => {
         if (this.config.verbosity_level >= 3) {
-            console.log('~ Keepalive message sent to ' + clientId);
+            this.log('~ Keepalive message sent to ' + clientId);
         }
 
         return this.sendDataToWebsocketClient({
@@ -271,7 +282,7 @@ module.exports = function (config) {
         this.setWebsocketClientToken(clientId, token);
 
         if (this.config.verbosity_level >= 3) {
-            console.log('+ Websocket connected: ' + clientId + ' (MyBB UID: ' + this.getUserIdByClientId(clientId) + ') [' + Object.keys(this.websocketClients).length + ' active connections]');
+            this.log('+ Websocket connected: ' + clientId + ' (MyBB UID: ' + this.getUserIdByClientId(clientId) + ') [' + Object.keys(this.websocketClients).length + ' active connections]');
         }
 
         return clientId;
@@ -327,7 +338,7 @@ module.exports = function (config) {
                 var userIdInfo = '';
             }
 
-            console.log('- Websocket disconnected by ' + closedBy + ': ' + clientId + userIdInfo + ' [' + Object.keys(this.websocketClients).length + ' active connections]');
+            this.log('- Websocket disconnected by ' + closedBy + ': ' + clientId + userIdInfo + ' [' + Object.keys(this.websocketClients).length + ' active connections]');
         }
     };
 
@@ -338,7 +349,7 @@ module.exports = function (config) {
         this.redisClient = redis.createClient(this.config.redisPort, this.config.redisHostname);
 
         this.redisClient.on('error', function (error) {
-            console.log('Redis client error: ' + error);
+            this.log('Redis client error: ' + error);
         });
 
         this.redisClient.on('pmessage', this.redisOnPmessage);
@@ -346,7 +357,7 @@ module.exports = function (config) {
         this.redisClient.psubscribe('*');
 
         if (this.config.verbosity_level >= 1) {
-            console.log('Redis client subscribed to channels on ' + this.config.redisHostname + ':' + this.config.redisPort);
+            this.log('Redis client subscribed to channels on ' + this.config.redisHostname + ':' + this.config.redisPort);
         }
     };
 
@@ -354,7 +365,7 @@ module.exports = function (config) {
         return new Promise((resolve, reject) => {
             this.redisClient.quit(() => {
                 if (this.config.verbosity_level >= 1) {
-                    console.log('Redis client closed');
+                    this.log('Redis client closed');
                 }
                 resolve();
             });
@@ -370,7 +381,7 @@ module.exports = function (config) {
             }
         } catch (error) {
             if (this.config.verbosity_level >= 2) {
-                console.log('! Malformed message received on channel "' + channel + '"');
+                this.log('! Malformed message received on channel "' + channel + '"');
             }
 
             return false;

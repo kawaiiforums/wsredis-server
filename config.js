@@ -16,6 +16,7 @@ var config = {
         clockTolerance: parseInt(process.env.WSREDIS_JWT_CLOCK_TOLERANCE),
     },
     "verbosity_level": parseInt(process.env.WSREDIS_VERBOSITY_LEVEL),
+    "log_timestamp": parseInt(process.env.WSREDIS_LOG_TIMESTAMP),
 };
 
 module.exports = config;
