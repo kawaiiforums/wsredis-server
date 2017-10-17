@@ -26,10 +26,12 @@ Run `npm install` in the app's directory to install dependencies and run `npm st
 
 - The `WSREDIS_JWT_ALGORITHMS` value contains comma-separated possible accepted hashing algorithms used to verify JWT signatures using the token key. It is not recommended to use algorithms that are weaker than defaults, less popular, custom or have not undergone an independent security audit.
 
-### Verbosity levels
-The `WSREDIS_VERBOSITY_LEVEL` option in the Node.js app configuration supports the following values (accumulative):
+### Log output
+The `WSREDIS_VERBOSITY_LEVEL` option in the Node.js app configuration supports the following values for event logging (accumulative):
 - `0`: errors,
 - `1`: startup & shutdown messages,
 - `2`: token mismatch events, malformed message notices,
 - `3`: WebSocket connections, token updates, keepalive messages,
 - `4`: channel subscription requests, broadcast messages summary.
+
+The `WSREDIS_LOG_TIMESTAMP` option (`0` or `1`), if enabled, adds a corresponding Unix timestamp to each message.
