@@ -37,7 +37,7 @@ The `WSREDIS_VERBOSITY_LEVEL` option in the Node.js app configuration supports t
 The `WSREDIS_LOG_TIMESTAMP` option (`0` or `1`), if enabled, adds a corresponding Unix timestamp to each message.
 
 ### Proxy via nginx
-In the event that you want/need to proxy your connection to the WSRedis server via nginx, example configuration has been provided below. We don't recommend setting the `proxy_send_timeout` or `proxy_read_timeout` to anything higher than 30 minutes.
+In the event that you want/need to proxy your connection to the WSRedis server via nginx, example configuration has been provided below. We don't recommend setting the `proxy_send_timeout` or `proxy_read_timeout` to anything higher than 30 minutes to save on resources.
 ```
 upstream wsredis {
     server localhost:8080;
