@@ -47,6 +47,9 @@ server {
     listen 443 ssl http2;
     server_name wsredis.example.com;
 
+    ssl_certificate /etc/letsencrypt/live/wsredis.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/wsredis.example.com/privkey.pem;
+
     location / {
         proxy_pass http://wsredis;
         proxy_http_version 1.1;
@@ -57,8 +60,5 @@ server {
         proxy_send_timeout 30m;
         proxy_read_timeout 30m;
     }
-
-    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
 }
 ```
