@@ -35,3 +35,31 @@ The `WSREDIS_VERBOSITY_LEVEL` option in the Node.js app configuration supports t
 - `4`: channel subscription requests, broadcast messages summary.
 
 The `WSREDIS_LOG_TIMESTAMP` option (`0` or `1`), if enabled, adds a corresponding Unix timestamp to each message.
+
+### Proxy via nginx
+In the event that you want/need to proxy your connection to the WSRedis server via nginx, example configuration has been provided below. We don't recommend setting the `proxy_send_timeout` or `proxy_read_timeout` to anything higher than 30 minutes.
+```
+upstream wsredis {
+    server localhost:8080;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name wsredis.example.com;
+
+    location / {
+        proxy_pass http://wsredis;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_connect_timeout 30m;
+        proxy_send_timeout 30m;
+        proxy_read_timeout 30m;
+    }
+
+    ssl on;
+    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+}
+```
