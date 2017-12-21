@@ -2,6 +2,8 @@
     "name" : "wsredis-server",
     "version" : "1.0.0",
     "description" : "WebSockets server for MyBB & Redis integration.",
+    "license": "ISC",
+    "author": "Tomasz 'Devilshakerz' Mlynski (https://devilshakerz.com/)",
     "main" : "app.js",
     "scripts": {
         "start": "node app.js"
@@ -15,6 +17,5 @@
     "repository": {
         "type": "git",
         "url": "git://github.com/kawaii/wsredis.git"
-    },
-    "private": true
+    }
 }
