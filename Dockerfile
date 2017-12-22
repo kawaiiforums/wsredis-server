@@ -1,4 +1,4 @@
-FROM node:9.2
+FROM node:9.3
 
 RUN mkdir -p /opt/wsredis/
 
