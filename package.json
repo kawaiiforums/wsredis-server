@@ -1,18 +1,18 @@
 {
-    "name" : "wsredis-server",
-    "version" : "1.0.0",
-    "description" : "WebSockets server for MyBB & Redis integration.",
+    "name": "wsredis-server",
+    "version": "1.0.0",
+    "description": "WebSockets server for MyBB & Redis integration.",
     "license": "ISC",
     "author": "Tomasz 'Devilshakerz' Mlynski (https://devilshakerz.com/)",
-    "main" : "app.js",
+    "main": "app.js",
     "scripts": {
         "start": "node app.js"
     },
     "dependencies": {
-        "ws": "~3.0.0",
-        "redis": "~2.7.1",
-        "jsonwebtoken": "~7.4.1",
-        "dotenv": "~4.0.0"
+        "dotenv": "~6.0.0",
+        "jsonwebtoken": "~8.3.0",
+        "redis": "~2.8.0",
+        "ws": "~5.2.0"
     },
     "repository": {
         "type": "git",

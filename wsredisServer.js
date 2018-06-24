@@ -348,7 +348,7 @@ module.exports = function (config) {
     this.startRedisClient = () => {
         this.redisClient = redis.createClient(this.config.redisPort, this.config.redisHostname);
 
-        this.redisClient.on('error', function (error) {
+        this.redisClient.on('error', (error) => {
             this.log('Redis client error: ' + error);
         });
 
