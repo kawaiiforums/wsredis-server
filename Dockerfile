@@ -1,4 +1,4 @@
-FROM node:9.11
+FROM node:11.6.0-alpine
 
 RUN mkdir -p /opt/wsredis/
 
