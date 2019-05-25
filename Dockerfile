@@ -1,13 +1,15 @@
-FROM node:11.6.0-alpine
+FROM node:12.3-alpine
 
-RUN mkdir -p /opt/wsredis/
+ARG BUILD_DATE
+ARG BUILD_VERSION
 
-ADD app.js /opt/wsredis/
-ADD config.js /opt/wsredis/
-ADD package.json /opt/wsredis/
-ADD wsredisServer.js /opt/wsredis/
+LABEL org.opencontainers.image.created=$BUILD_DATE
+LABEL org.opencontainers.image.version=$BUILD_VERSION
 
-WORKDIR /opt/wsredis/
-RUN npm install
-USER nobody
-CMD ["npm", "start"]
+WORKDIR /opt/wsredis
+COPY ${PWD} /opt/wsredis
+
+RUN npm install && npm cache clean --force
+
+USER node
+CMD ["node", "app.js"]
