@@ -1,4 +1,4 @@
-FROM node:12.3-alpine
+FROM node:14-alpine
 
 ARG BUILD_DATE
 ARG BUILD_VERSION
